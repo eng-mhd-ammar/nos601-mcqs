@@ -10,7 +10,7 @@
 <body>
   <header class="top">
   <div class="top-inner">
-    <h1>كويز أنظمة التشغيل و الحوسبة السحابية</h1>
+    <h1>نظم التشغيل (2)</h1>
     <p class="subtitle">جميع الأسئلة من الملف — تلميح لكل سؤال</p>
     </div>
   </header>
@@ -144,10 +144,14 @@
   <div id="appToast" class="app-toast" hidden role="status" aria-live="polite"></div>
 
   <div class="page-scroll-tools" id="pageScrollTools" hidden aria-label="تمرير الصفحة">
-    <button type="button" id="btnScrollTop" class="btn ghost page-scroll-btn">أول الصفحة</button>
-    <button type="button" id="btnScrollBottom" class="btn ghost page-scroll-btn">آخر الصفحة</button>
+    <button type="button" id="btnScrollTop" class="page-scroll-btn" aria-label="أول الصفحة" title="أول الصفحة">
+      <span class="page-scroll-arrow" aria-hidden="true">↑</span>
+    </button>
+    <button type="button" id="btnScrollBottom" class="page-scroll-btn" aria-label="آخر الصفحة" title="آخر الصفحة">
+      <span class="page-scroll-arrow" aria-hidden="true">↓</span>
+    </button>
   </div>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

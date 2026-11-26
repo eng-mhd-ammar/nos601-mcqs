@@ -696,11 +696,12 @@ body.is-busy .quiz-list {
 .page-scroll-tools {
   position: fixed;
   z-index: 900;
-  bottom: max(1.1rem, env(safe-area-inset-bottom));
-  inset-inline-end: max(0.85rem, env(safe-area-inset-right));
+  bottom: max(1.15rem, env(safe-area-inset-bottom));
+  inset-inline-end: max(0.9rem, env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  pointer-events: none;
 }
 
 .page-scroll-tools[hidden] {
@@ -708,16 +709,41 @@ body.is-busy .quiz-list {
 }
 
 .page-scroll-btn {
-  min-width: 7.25rem;
-  padding: 0.48rem 0.75rem;
-  font-size: 0.84rem;
+  pointer-events: auto;
+  width: 2.85rem;
+  height: 2.85rem;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
   background: var(--bg-card);
-  border-color: var(--border);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .page-scroll-btn:hover {
   border-color: var(--accent);
+  background: var(--bg-elevated);
+  transform: translateY(-2px);
+}
+
+.page-scroll-btn:active {
+  transform: translateY(0);
+}
+
+.page-scroll-arrow {
+  font-size: 1.35rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--accent-bright);
 }
 
 .foot {
