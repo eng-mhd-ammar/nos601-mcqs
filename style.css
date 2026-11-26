@@ -696,8 +696,8 @@ body.is-busy .quiz-list {
 .page-scroll-tools {
   position: fixed;
   z-index: 1200;
-  left: max(1.25rem, env(safe-area-inset-left, 0px));
-  right: auto;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  left: auto;
   bottom: max(8.25rem, calc(env(safe-area-inset-bottom, 0px) + 7.5rem));
   display: flex;
   flex-direction: column;
