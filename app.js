@@ -44,6 +44,9 @@
     pageJumpForm: document.getElementById("pageJumpForm"),
     pageJumpInput: document.getElementById("pageJumpInput"),
     btnPageJump: document.getElementById("btnPageJump"),
+    pageScrollTools: document.getElementById("pageScrollTools"),
+    btnScrollTop: document.getElementById("btnScrollTop"),
+    btnScrollBottom: document.getElementById("btnScrollBottom"),
   };
 
   let allQuestions = [];
@@ -334,6 +337,14 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function scrollToPageBottom() {
+    const height = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight
+    );
+    window.scrollTo({ top: height, behavior: "smooth" });
+  }
+
   function showToast(message, variant) {
     if (!els.appToast) return;
     clearTimeout(toastTimer);
@@ -529,10 +540,12 @@
       els.loadMsg.textContent = "لا توجد أسئلة مطابقة للبحث.";
       els.loadMsg.hidden = false;
       els.pager.hidden = true;
+      if (els.pageScrollTools) els.pageScrollTools.hidden = true;
       return;
     }
     els.loadMsg.hidden = true;
     els.pager.hidden = false;
+    if (els.pageScrollTools) els.pageScrollTools.hidden = false;
     els.pageInfo.textContent = `صفحة ${currentPage} من ${totalPages} (${filtered.length} سؤال)`;
 
     items.forEach((q) => {
@@ -779,6 +792,12 @@
         scrollToPageTop();
       }
     });
+    if (els.btnScrollTop) {
+      els.btnScrollTop.addEventListener("click", () => scrollToPageTop());
+    }
+    if (els.btnScrollBottom) {
+      els.btnScrollBottom.addEventListener("click", () => scrollToPageBottom());
+    }
     if (els.pageJumpForm) {
       els.pageJumpForm.addEventListener("submit", (e) => {
         e.preventDefault();

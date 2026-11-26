@@ -693,6 +693,33 @@ body.is-busy .quiz-list {
   min-width: 8rem;
 }
 
+.page-scroll-tools {
+  position: fixed;
+  z-index: 900;
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
+  inset-inline-end: max(0.85rem, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.page-scroll-tools[hidden] {
+  display: none !important;
+}
+
+.page-scroll-btn {
+  min-width: 7.25rem;
+  padding: 0.48rem 0.75rem;
+  font-size: 0.84rem;
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+}
+
+.page-scroll-btn:hover {
+  border-color: var(--accent);
+}
+
 .foot {
   text-align: center;
   padding: 1.5rem 1rem 2rem;
