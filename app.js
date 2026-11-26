@@ -4,6 +4,7 @@
   const STORAGE_KEY = "nos601-answers-v2";
   const CONFIRMED_KEY = "nos601-confirmed-v2";
   const PRE_SOLVED_KEY = "nos601-presolved-v2";
+  const LAST_MANUAL_Q_KEY = "nos601-last-manual-q-v2";
   const QUESTIONS_JSON_VERSION = "20261126-pdf";
   const MERGED_OPTION_RE = /^(.+)\s+([E-Z])\)\s+(.+)$/;
   const PRE_SOLVE_MIN = 100;
@@ -40,6 +41,8 @@
     dialogCancel: document.getElementById("dialogCancel"),
     dialogConfirm: document.getElementById("dialogConfirm"),
     appToast: document.getElementById("appToast"),
+    pageJumpForm: document.getElementById("pageJumpForm"),
+    pageJumpInput: document.getElementById("pageJumpInput"),
   };
 
   let allQuestions = [];
@@ -130,10 +133,93 @@
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(CONFIRMED_KEY);
+      localStorage.removeItem(LAST_MANUAL_Q_KEY);
       sessionStorage.removeItem(PRE_SOLVED_KEY);
     } catch {
       /* ignore */
     }
+  }
+
+  function loadLastManualQuestionId() {
+    try {
+      const raw = localStorage.getItem(LAST_MANUAL_Q_KEY);
+      if (!raw) return null;
+      const id = Number(raw);
+      return Number.isFinite(id) && id > 0 ? id : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveLastManualQuestionId(id) {
+    if (!id || preSolved.has(id)) return;
+    try {
+      localStorage.setItem(LAST_MANUAL_Q_KEY, String(id));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function getTotalPages() {
+    const size = Number(els.pageSize?.value) || 20;
+    return Math.max(1, Math.ceil(filtered.length / size));
+  }
+
+  function findPageForQuestionId(id) {
+    const idx = filtered.findIndex((q) => q.id === id);
+    if (idx < 0) return null;
+    const size = Number(els.pageSize?.value) || 20;
+    return Math.floor(idx / size) + 1;
+  }
+
+  function goToPage(pageNum, options) {
+    const opts = options || {};
+    const totalPages = getTotalPages();
+    if (!Number.isFinite(pageNum) || pageNum < 1 || pageNum > totalPages) {
+      if (!opts.silent) {
+        showToast(`أدخل رقماً بين 1 و ${totalPages}.`, "warn");
+      }
+      return false;
+    }
+    currentPage = Math.floor(pageNum);
+    render();
+    if (opts.scroll === "question" && opts.questionId) {
+      scrollToQuestionById(opts.questionId);
+    } else {
+      scrollToPageTop();
+    }
+  }
+
+  function restorePageForLastManualQuestion() {
+    const id = loadLastManualQuestionId();
+    if (!id || preSolved.has(id) || !userAnswers[id]) return null;
+    const page = findPageForQuestionId(id);
+    if (!page) return null;
+    currentPage = page;
+    return id;
+  }
+
+  function scrollToQuestionById(id) {
+    if (!id || !els.quizList) {
+      scrollToPageTop();
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      const card = els.quizList.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        scrollToPageTop();
+      }
+    });
+  }
+
+  function syncPageJumpUi() {
+    if (!els.pageJumpInput) return;
+    const totalPages = getTotalPages();
+    els.pageJumpInput.min = "1";
+    els.pageJumpInput.max = String(totalPages);
+    els.pageJumpInput.placeholder = `1–${totalPages}`;
   }
 
   function setControlsDisabled(disabled) {
@@ -146,6 +232,7 @@
       els.searchInput,
       els.sectionFilter,
       els.pageSize,
+      els.pageJumpInput,
     ].forEach((el) => {
       if (el) el.disabled = disabled;
     });
@@ -395,6 +482,7 @@
     }
     confirmedIds.add(q.id);
     saveConfirmed();
+    saveLastManualQuestionId(q.id);
     markOptions(card, q, true);
     showFeedback(card, q, true);
     lockQuestion(card);
@@ -505,6 +593,7 @@
           label.querySelector("input").addEventListener("change", (e) => {
             userAnswers[q.id] = e.target.value;
             saveAnswers();
+            saveLastManualQuestionId(q.id);
             updateStats();
             applyPendingSelection(card);
           });
@@ -529,6 +618,7 @@
     });
 
     updateStats();
+    syncPageJumpUi();
   }
 
   function hideScoreReport() {
@@ -644,9 +734,13 @@
         filtered = allQuestions.slice();
         if (els.loadMsg) els.loadMsg.hidden = true;
         appReady = true;
+        const resumeQuestionId = restorePageForLastManualQuestion();
         updateStats();
         render();
         setLoading(false);
+        if (resumeQuestionId) {
+          scrollToQuestionById(resumeQuestionId);
+        }
       })
       .catch((err) => {
         appReady = false;
@@ -671,13 +765,28 @@
       }
     });
     els.nextPage.addEventListener("click", () => {
-      const { totalPages } = pageSlice();
+      const totalPages = getTotalPages();
       if (currentPage < totalPages) {
         currentPage++;
         render();
         scrollToPageTop();
       }
     });
+    if (els.pageJumpForm) {
+      els.pageJumpForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!appReady || isBusy) return;
+        const raw = els.pageJumpInput && els.pageJumpInput.value.trim();
+        if (!raw) {
+          showToast("أدخل رقم الصفحة.", "warn");
+          return;
+        }
+        const ok = goToPage(Number(raw));
+        if (ok && els.pageJumpInput) {
+          els.pageJumpInput.value = "";
+        }
+      });
+    }
     if (els.btnScoreAll) els.btnScoreAll.addEventListener("click", scoreAll);
     if (els.btnCloseScore) els.btnCloseScore.addEventListener("click", hideScoreReport);
     if (els.btnReset) els.btnReset.addEventListener("click", () => void resetUser());

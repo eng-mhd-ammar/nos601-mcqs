@@ -94,6 +94,21 @@
 
   <footer class="foot">
     <p>اضغط <strong>تأكيد الإجابة</strong> لكل سؤال — الصحيح <span class="correct-sample">أخضر</span>، وعند الخطأ إجابتك <span class="wrong-sample">حمراء</span> والصحيحة <span class="correct-sample">خضراء</span>. ثم <strong>احسب العلامة</strong>.</p>
+    <form id="pageJumpForm" class="foot-page-jump">
+      <label class="foot-page-label" for="pageJumpInput">انتقال إلى صفحة</label>
+      <input
+        type="number"
+        id="pageJumpInput"
+        class="foot-page-input"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        placeholder="رقم الصفحة"
+        aria-label="رقم الصفحة"
+      />
+      <button type="submit" class="btn ghost">انتقال</button>
+    </form>
+    <p class="foot-credit">By Mhd Ammar Al-Nwelati</p>
   </footer>
 
   <div id="appBusy" class="app-busy" hidden role="status" aria-live="polite" aria-busy="true">
@@ -125,6 +140,6 @@
 
   <div id="appToast" class="app-toast" hidden role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
