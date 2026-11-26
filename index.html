@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#13101c" />
+  <title>NOS601 — كويز أنظمة التشغيل</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+  <div class="top-inner">
+    <h1>كويز أنظمة التشغيل و الحوسبة السحابية</h1>
+    <p class="subtitle">جميع الأسئلة من الملف — تلميح لكل سؤال</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel stats" aria-label="ملخص">
+      <div class="stat">
+        <span class="label">عدد الأسئلة</span>
+        <strong id="totalCount">—</strong>
+      </div>
+      <div class="stat">
+        <span class="label">جاهزة (محلولة)</span>
+        <strong id="preCount">—</strong>
+      </div>
+      <div class="stat">
+        <span class="label">إجاباتك</span>
+        <strong id="answeredCount">0</strong>
+      </div>
+      <div class="stat highlight">
+        <span class="label">الدرجة / 100</span>
+        <strong id="scoreValue">—</strong>
+      </div>
+    </section>
+
+    <section class="panel controls">
+      <label class="field grow">
+        <span>بحث في نص السؤال</span>
+        <input type="search" id="searchInput" placeholder="اكتب كلمة مفتاحية..." autocomplete="off" />
+      </label>
+      <label class="field grow">
+        <span>القسم</span>
+        <select id="sectionFilter">
+          <option value="">كل الأقسام</option>
+        </select>
+      </label>
+      <label class="field narrow">
+        <span>أسئلة / صفحة</span>
+        <select id="pageSize">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button type="button" id="btnScoreAll" class="btn primary">احسب العلامة</button>
+        <button type="button" id="btnReset" class="btn ghost">إعادة تعيين إجاباتي</button>
+      </div>
+    </section>
+
+    <p id="loadMsg" class="load-msg">جاري تحميل الأسئلة...</p>
+    <div id="quizList" class="quiz-list" aria-live="polite"></div>
+
+    <nav class="pager panel" id="pager" hidden>
+      <button type="button" id="prevPage" class="btn ghost">السابق</button>
+      <span id="pageInfo">صفحة 1</span>
+      <button type="button" id="nextPage" class="btn ghost">التالي</button>
+    </nav>
+  </main>
+
+  <footer class="foot">
+    <p>اضغط <strong>تأكيد الإجابة</strong> لكل سؤال — الصحيح <span class="correct-sample">أخضر</span>، وعند الخطأ إجابتك <span class="wrong-sample">حمراء</span> والصحيحة <span class="correct-sample">خضراء</span>. ثم <strong>احسب العلامة</strong>.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
