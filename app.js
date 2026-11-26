@@ -33,6 +33,13 @@
     scoreCorrectLine: document.getElementById("scoreCorrectLine"),
     scoreConfirmedLine: document.getElementById("scoreConfirmedLine"),
     btnCloseScore: document.getElementById("btnCloseScore"),
+    appDialog: document.getElementById("appDialog"),
+    dialogBackdrop: document.getElementById("dialogBackdrop"),
+    dialogTitle: document.getElementById("dialogTitle"),
+    dialogBody: document.getElementById("dialogBody"),
+    dialogCancel: document.getElementById("dialogCancel"),
+    dialogConfirm: document.getElementById("dialogConfirm"),
+    appToast: document.getElementById("appToast"),
   };
 
   let allQuestions = [];
@@ -44,6 +51,9 @@
   let currentPage = 1;
   let appReady = false;
   let isBusy = false;
+  let toastTimer = null;
+  let dialogResolver = null;
+  let dialogLastFocus = null;
 
   function shuffleIds(ids) {
     const arr = ids.slice();
@@ -226,6 +236,78 @@
     return data.map(normalizeQuestion);
   }
 
+  function scrollToPageTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showToast(message, variant) {
+    if (!els.appToast) return;
+    clearTimeout(toastTimer);
+    els.appToast.textContent = message;
+    els.appToast.className = "app-toast" + (variant ? " " + variant : "");
+    els.appToast.hidden = false;
+    toastTimer = window.setTimeout(() => {
+      els.appToast.hidden = true;
+    }, 3200);
+  }
+
+  function closeDialog(result) {
+    if (!els.appDialog) return;
+    els.appDialog.hidden = true;
+    document.body.classList.remove("dialog-open");
+    const resolver = dialogResolver;
+    dialogResolver = null;
+    if (dialogLastFocus && typeof dialogLastFocus.focus === "function") {
+      dialogLastFocus.focus();
+    }
+    dialogLastFocus = null;
+    if (resolver) resolver(result);
+  }
+
+  function showDialog(options) {
+    return new Promise((resolve) => {
+      if (!els.appDialog) {
+        resolve(false);
+        return;
+      }
+      dialogLastFocus = document.activeElement;
+      dialogResolver = resolve;
+
+      const mode = options.mode || "alert";
+      const title = options.title || (mode === "confirm" ? "تأكيد" : "تنبيه");
+      const message = options.message || "";
+      const confirmText = options.confirmText || (mode === "confirm" ? "تأكيد" : "حسناً");
+      const cancelText = options.cancelText || "إلغاء";
+
+      if (els.dialogTitle) els.dialogTitle.textContent = title;
+      if (els.dialogBody) els.dialogBody.textContent = message;
+      if (els.dialogConfirm) {
+        els.dialogConfirm.textContent = confirmText;
+        els.dialogConfirm.className =
+          "btn " + (options.danger ? "btn-danger" : "primary");
+      }
+      if (els.dialogCancel) {
+        els.dialogCancel.hidden = mode !== "confirm";
+        els.dialogCancel.textContent = cancelText;
+      }
+
+      els.appDialog.hidden = false;
+      document.body.classList.add("dialog-open");
+      if (els.dialogConfirm) els.dialogConfirm.focus();
+    });
+  }
+
+  function showConfirmDialog(message, options) {
+    return showDialog({
+      mode: "confirm",
+      title: options?.title || "تأكيد الإجراء",
+      message,
+      confirmText: options?.confirmText || "تأكيد",
+      cancelText: options?.cancelText || "إلغاء",
+      danger: options?.danger,
+    });
+  }
+
   function shortSection(name) {
     if (!name) return "—";
     return name.length > 72 ? name.slice(0, 69) + "…" : name;
@@ -307,7 +389,8 @@
     if (preSolved.has(q.id)) return;
     const pick = userAnswers[q.id];
     if (!pick) {
-      alert("اختر إجابة قبل التأكيد.");
+      showToast("اختر إجابة قبل التأكيد.", "warn");
+      card.scrollIntoView({ behavior: "smooth", block: "nearest" });
       return;
     }
     confirmedIds.add(q.id);
@@ -474,8 +557,12 @@
     showScoreReport();
   }
 
-  function resetUser() {
-    if (!confirm("هل تريد مسح إجاباتك المحفوظة؟ الأسئلة المحلولة مسبقاً تبقى كما هي.")) return;
+  async function resetUser() {
+    const ok = await showConfirmDialog(
+      "هل تريد مسح إجاباتك المحفوظة؟\nالأسئلة المحلولة مسبقاً تبقى كما هي.",
+      { title: "إعادة تعيين الإجابات", confirmText: "مسح إجاباتي" }
+    );
+    if (!ok) return;
     userAnswers = {};
     confirmedIds = new Set();
     preSolved.forEach((id) => {
@@ -489,17 +576,19 @@
     render();
   }
 
-  function retestFromScratch() {
+  async function retestFromScratch() {
     if (isBusy) return;
-    if (
-      !confirm(
-        "إعادة الاختبار من الصفر؟\n\nسيتم حذف كل الإجابات والتأكيدات المحفوظة، ومجموعة الأسئلة المحلولة مسبقاً، كأنك تفتح الموقع لأول مرة."
-      )
-    ) {
-      return;
-    }
+    const ok = await showConfirmDialog(
+      "إعادة الاختبار من الصفر؟\n\nسيتم حذف كل الإجابات والتأكيدات المحفوظة، ومجموعة الأسئلة المحلولة مسبقاً، كأنك تفتح الموقع لأول مرة.",
+      {
+        title: "إعادة الاختبار",
+        confirmText: "إعادة من الصفر",
+        danger: true,
+      }
+    );
+    if (!ok) return;
     if (!allQuestions.length) {
-      alert("انتظر حتى تنتهي تحميل الأسئلة.");
+      showToast("انتظر حتى تنتهي تحميل الأسئلة.", "warn");
       return;
     }
 
@@ -521,7 +610,7 @@
         updateStats();
         render();
       } catch (err) {
-        alert("تعذرت إعادة الاختبار: " + err.message);
+        showToast("تعذرت إعادة الاختبار: " + err.message, "error");
       } finally {
         setLoading(false);
       }
@@ -578,6 +667,7 @@
       if (currentPage > 1) {
         currentPage--;
         render();
+        scrollToPageTop();
       }
     });
     els.nextPage.addEventListener("click", () => {
@@ -585,16 +675,36 @@
       if (currentPage < totalPages) {
         currentPage++;
         render();
+        scrollToPageTop();
       }
     });
     if (els.btnScoreAll) els.btnScoreAll.addEventListener("click", scoreAll);
     if (els.btnCloseScore) els.btnCloseScore.addEventListener("click", hideScoreReport);
-    if (els.btnReset) els.btnReset.addEventListener("click", resetUser);
+    if (els.btnReset) els.btnReset.addEventListener("click", () => void resetUser());
     if (els.btnRetest) {
-      els.btnRetest.addEventListener("click", retestFromScratch);
+      els.btnRetest.addEventListener("click", () => void retestFromScratch());
     } else {
       console.warn("زر إعادة الاختبار غير موجود — حدّث الصفحة (Ctrl+F5)");
     }
+
+    if (els.dialogConfirm) {
+      els.dialogConfirm.addEventListener("click", () => closeDialog(true));
+    }
+    if (els.dialogCancel) {
+      els.dialogCancel.addEventListener("click", () => closeDialog(false));
+    }
+    if (els.dialogBackdrop) {
+      els.dialogBackdrop.addEventListener("click", () => {
+        const isConfirm =
+          els.dialogCancel && !els.dialogCancel.hidden;
+        closeDialog(!isConfirm);
+      });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !els.appDialog || els.appDialog.hidden) return;
+      const isConfirm = els.dialogCancel && !els.dialogCancel.hidden;
+      closeDialog(!isConfirm);
+    });
   }
 
   function debounce(fn, ms) {

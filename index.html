@@ -103,6 +103,28 @@
     </div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <div
+    id="appDialog"
+    class="app-dialog"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialogTitle"
+    aria-describedby="dialogBody"
+  >
+    <button type="button" id="dialogBackdrop" class="app-dialog-backdrop" aria-label="إغلاق"></button>
+    <div class="app-dialog-card">
+      <h3 id="dialogTitle" class="app-dialog-title">تنبيه</h3>
+      <div id="dialogBody" class="app-dialog-body"></div>
+      <div class="app-dialog-actions">
+        <button type="button" id="dialogCancel" class="btn ghost">إلغاء</button>
+        <button type="button" id="dialogConfirm" class="btn primary">موافق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appToast" class="app-toast" hidden role="status" aria-live="polite"></div>
+
+  <script src="app.js?v=5"></script>
 </body>
 </html>
