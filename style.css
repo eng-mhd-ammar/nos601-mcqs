@@ -695,13 +695,14 @@ body.is-busy .quiz-list {
 
 .page-scroll-tools {
   position: fixed;
-  z-index: 900;
-  bottom: max(1.15rem, env(safe-area-inset-bottom));
-  inset-inline-end: max(0.9rem, env(safe-area-inset-right));
+  z-index: 1050;
+  bottom: max(6rem, calc(env(safe-area-inset-bottom) + 5rem));
+  inset-inline-end: max(1.15rem, env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
   pointer-events: none;
+  isolation: isolate;
 }
 
 .page-scroll-tools[hidden] {
@@ -710,37 +711,54 @@ body.is-busy .quiz-list {
 
 .page-scroll-btn {
   pointer-events: auto;
-  width: 2.85rem;
-  height: 2.85rem;
+  width: 3.4rem;
+  height: 3.4rem;
   padding: 0;
   margin: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text);
+  border: 2px solid var(--accent);
+  background: rgba(28, 24, 41, 0.52);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--accent-bright);
   cursor: pointer;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    transform 0.15s ease;
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .page-scroll-btn:hover {
-  border-color: var(--accent);
-  background: var(--bg-elevated);
-  transform: translateY(-2px);
+  border-color: var(--accent-bright);
+  background: rgba(139, 92, 246, 0.22);
+  transform: translateY(-3px);
+  box-shadow:
+    0 14px 38px rgba(139, 92, 246, 0.28),
+    0 0 0 1px rgba(192, 132, 252, 0.35);
 }
 
 .page-scroll-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
+  background: rgba(139, 92, 246, 0.3);
+}
+
+.page-scroll-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 3px var(--accent-dim);
 }
 
 .page-scroll-arrow {
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   line-height: 1;
   font-weight: 700;
   color: var(--accent-bright);
