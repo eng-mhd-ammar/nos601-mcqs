@@ -175,6 +175,17 @@ h1 {
   background: transparent;
 }
 
+.btn.danger {
+  background: transparent;
+  color: var(--bad);
+  border-color: var(--bad-border);
+}
+
+.btn.danger:hover {
+  background: var(--bad-bg);
+  border-color: var(--bad);
+}
+
 .load-msg {
   text-align: center;
   color: var(--text-muted);

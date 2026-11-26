@@ -17,6 +17,7 @@
     pageSize: document.getElementById("pageSize"),
     btnScoreAll: document.getElementById("btnScoreAll"),
     btnReset: document.getElementById("btnReset"),
+    btnRetest: document.getElementById("btnRetest"),
     loadMsg: document.getElementById("loadMsg"),
     quizList: document.getElementById("quizList"),
     pager: document.getElementById("pager"),
@@ -365,6 +366,24 @@
     render();
   }
 
+  function retestFromScratch() {
+    if (
+      !confirm(
+        "إعادة الاختبار من الصفر؟\n\nسيتم حذف كل الإجابات والتأكيدات المحفوظة، ومجموعة الأسئلة المحلولة مسبقاً، كأنك تفتح الموقع لأول مرة."
+      )
+    ) {
+      return;
+    }
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CONFIRMED_KEY);
+      sessionStorage.removeItem(PRE_SOLVED_KEY);
+    } catch {
+      /* ignore */
+    }
+    location.reload();
+  }
+
   function fillSections() {
     const sections = [...new Set(allQuestions.map((q) => q.section))].sort();
     sections.forEach((s) => {
@@ -424,6 +443,7 @@
     });
     els.btnScoreAll.addEventListener("click", scoreAll);
     els.btnReset.addEventListener("click", resetUser);
+    els.btnRetest.addEventListener("click", retestFromScratch);
   }
 
   function debounce(fn, ms) {
