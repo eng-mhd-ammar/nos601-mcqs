@@ -24,6 +24,13 @@
     prevPage: document.getElementById("prevPage"),
     nextPage: document.getElementById("nextPage"),
     pageInfo: document.getElementById("pageInfo"),
+    appBusy: document.getElementById("appBusy"),
+    busyMsg: document.getElementById("busyMsg"),
+    scoreReport: document.getElementById("scoreReport"),
+    scoreReportValue: document.getElementById("scoreReportValue"),
+    scoreCorrectLine: document.getElementById("scoreCorrectLine"),
+    scoreConfirmedLine: document.getElementById("scoreConfirmedLine"),
+    btnCloseScore: document.getElementById("btnCloseScore"),
   };
 
   let allQuestions = [];
@@ -33,6 +40,8 @@
   let preSolved = new Set();
   let lastScore = null;
   let currentPage = 1;
+  let appReady = false;
+  let isBusy = false;
 
   function shuffleIds(ids) {
     const arr = ids.slice();
@@ -103,6 +112,62 @@
 
   function saveConfirmed() {
     localStorage.setItem(CONFIRMED_KEY, JSON.stringify([...confirmedIds]));
+  }
+
+  function clearAllStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CONFIRMED_KEY);
+      sessionStorage.removeItem(PRE_SOLVED_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function setControlsDisabled(disabled) {
+    [
+      els.btnScoreAll,
+      els.btnReset,
+      els.btnRetest,
+      els.prevPage,
+      els.nextPage,
+      els.searchInput,
+      els.sectionFilter,
+      els.pageSize,
+    ].forEach((el) => {
+      if (el) el.disabled = disabled;
+    });
+    if (els.quizList) {
+      if (disabled) {
+        els.quizList.setAttribute("inert", "");
+      } else {
+        els.quizList.removeAttribute("inert");
+      }
+    }
+  }
+
+  function setLoading(loading, message) {
+    isBusy = loading;
+    if (message && els.busyMsg) els.busyMsg.textContent = message;
+    if (els.appBusy) {
+      els.appBusy.hidden = !loading;
+      els.appBusy.setAttribute("aria-busy", loading ? "true" : "false");
+    }
+    document.body.classList.toggle("is-busy", loading);
+    setControlsDisabled(loading || !appReady);
+  }
+
+  function bootstrapPreSolvedFromStorage() {
+    preSolved = loadOrCreatePreSolved(allQuestions.map((q) => q.id));
+    for (const id of preSolved) {
+      const q = allQuestions.find((x) => x.id === id);
+      if (q) {
+        userAnswers[id] = q.answer;
+        confirmedIds.add(id);
+      }
+    }
+    saveAnswers();
+    saveConfirmed();
   }
 
   function isConfirmed(id) {
@@ -339,17 +404,30 @@
     updateStats();
   }
 
+  function hideScoreReport() {
+    if (els.scoreReport) els.scoreReport.hidden = true;
+  }
+
+  function showScoreReport() {
+    if (!els.scoreReport || lastScore === null) return;
+    const correct = Math.round((lastScore / 100) * allQuestions.length);
+    if (els.scoreReportValue) els.scoreReportValue.textContent = String(lastScore);
+    if (els.scoreCorrectLine) {
+      els.scoreCorrectLine.textContent = `صحيح: ${correct} من ${allQuestions.length}`;
+    }
+    if (els.scoreConfirmedLine) {
+      els.scoreConfirmedLine.textContent =
+        `مؤكَّد: ${confirmedIds.size} سؤالاً (منها ${preSolved.size} محلول مسبقاً)`;
+    }
+    els.scoreReport.hidden = false;
+    els.scoreReport.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
   function scoreAll() {
+    if (isBusy || !appReady || !allQuestions.length) return;
     lastScore = scorePercent();
     updateStats();
-    const correct = Math.round((lastScore / 100) * allQuestions.length);
-    const confirmedCount = confirmedIds.size + preSolved.size;
-    alert(
-      `العلامة من 100: ${lastScore}\n` +
-        `صحيح: ${correct} من ${allQuestions.length}\n` +
-        `مؤكَّد: ${confirmedCount} سؤالاً (منها ${preSolved.size} محلول مسبقاً)\n` +
-        `ملاحظة: الأسئلة غير المؤكدة تُحسب كأخطاء.`
-    );
+    showScoreReport();
   }
 
   function resetUser() {
@@ -361,12 +439,14 @@
       if (q) userAnswers[id] = q.answer;
     });
     lastScore = null;
+    hideScoreReport();
     saveAnswers();
     saveConfirmed();
     render();
   }
 
   function retestFromScratch() {
+    if (isBusy) return;
     if (
       !confirm(
         "إعادة الاختبار من الصفر؟\n\nسيتم حذف كل الإجابات والتأكيدات المحفوظة، ومجموعة الأسئلة المحلولة مسبقاً، كأنك تفتح الموقع لأول مرة."
@@ -374,14 +454,34 @@
     ) {
       return;
     }
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(CONFIRMED_KEY);
-      sessionStorage.removeItem(PRE_SOLVED_KEY);
-    } catch {
-      /* ignore */
+    if (!allQuestions.length) {
+      alert("انتظر حتى تنتهي تحميل الأسئلة.");
+      return;
     }
-    location.reload();
+
+    setLoading(true, "جاري إعادة الاختبار…");
+
+    window.setTimeout(() => {
+      try {
+        clearAllStorage();
+        userAnswers = {};
+        confirmedIds = new Set();
+        lastScore = null;
+        hideScoreReport();
+        currentPage = 1;
+        els.searchInput.value = "";
+        els.sectionFilter.value = "";
+        bootstrapPreSolvedFromStorage();
+        filtered = allQuestions.slice();
+        if (els.loadMsg) els.loadMsg.hidden = true;
+        updateStats();
+        render();
+      } catch (err) {
+        alert("تعذرت إعادة الاختبار: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, 60);
   }
 
   function fillSections() {
@@ -396,6 +496,9 @@
   }
 
   function init() {
+    appReady = false;
+    setLoading(true, "جاري تحميل الأسئلة…");
+
     fetch("questions.json")
       .then((r) => {
         if (!r.ok) throw new Error("تعذر تحميل questions.json");
@@ -403,23 +506,22 @@
       })
       .then((data) => {
         allQuestions = data;
-        preSolved = loadOrCreatePreSolved(allQuestions.map((q) => q.id));
-        preSolved.forEach((id) => {
-          const q = allQuestions.find((x) => x.id === id);
-          if (q) {
-            userAnswers[id] = q.answer;
-            confirmedIds.add(id);
-          }
-        });
-        saveConfirmed();
+        bootstrapPreSolvedFromStorage();
         fillSections();
         filtered = allQuestions.slice();
-        els.loadMsg.hidden = true;
+        if (els.loadMsg) els.loadMsg.hidden = true;
+        appReady = true;
         updateStats();
         render();
+        setLoading(false);
       })
       .catch((err) => {
-        els.loadMsg.textContent = "خطأ: " + err.message;
+        appReady = false;
+        if (els.loadMsg) {
+          els.loadMsg.textContent = "خطأ: " + err.message;
+          els.loadMsg.hidden = false;
+        }
+        setLoading(false);
       });
 
     els.searchInput.addEventListener("input", debounce(applyFilters, 280));
@@ -441,9 +543,14 @@
         render();
       }
     });
-    els.btnScoreAll.addEventListener("click", scoreAll);
-    els.btnReset.addEventListener("click", resetUser);
-    els.btnRetest.addEventListener("click", retestFromScratch);
+    if (els.btnScoreAll) els.btnScoreAll.addEventListener("click", scoreAll);
+    if (els.btnCloseScore) els.btnCloseScore.addEventListener("click", hideScoreReport);
+    if (els.btnReset) els.btnReset.addEventListener("click", resetUser);
+    if (els.btnRetest) {
+      els.btnRetest.addEventListener("click", retestFromScratch);
+    } else {
+      console.warn("زر إعادة الاختبار غير موجود — حدّث الصفحة (Ctrl+F5)");
+    }
   }
 
   function debounce(fn, ms) {

@@ -35,6 +35,27 @@
       </div>
     </section>
 
+    <section
+      id="scoreReport"
+      class="panel score-report"
+      hidden
+      aria-label="نتيجة الاختبار"
+      aria-live="polite"
+    >
+      <div class="score-report-head">
+        <h2>نتيجة الاختبار</h2>
+        <button type="button" id="btnCloseScore" class="btn ghost">إغلاق</button>
+      </div>
+      <p class="score-big">
+        <span id="scoreReportValue">—</span><span class="score-denom"> / 100</span>
+      </p>
+      <ul class="score-details">
+        <li id="scoreCorrectLine">—</li>
+        <li id="scoreConfirmedLine">—</li>
+      </ul>
+      <p class="score-note">ملاحظة: الأسئلة غير المؤكَّدة تُحسب كأخطاء.</p>
+    </section>
+
     <section class="panel controls">
       <label class="field grow">
         <span>بحث في نص السؤال</span>
@@ -75,6 +96,13 @@
     <p>اضغط <strong>تأكيد الإجابة</strong> لكل سؤال — الصحيح <span class="correct-sample">أخضر</span>، وعند الخطأ إجابتك <span class="wrong-sample">حمراء</span> والصحيحة <span class="correct-sample">خضراء</span>. ثم <strong>احسب العلامة</strong>.</p>
   </footer>
 
-  <script src="app.js"></script>
+  <div id="appBusy" class="app-busy" hidden role="status" aria-live="polite" aria-busy="true">
+    <div class="app-busy-card">
+      <span class="spinner" aria-hidden="true"></span>
+      <p id="busyMsg">جاري التحميل...</p>
+    </div>
+  </div>
+
+  <script src="app.js?v=3"></script>
 </body>
 </html>
