@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#13101c" />
   <title>NOS601 — كويز أنظمة التشغيل</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
   <header class="top">
@@ -145,13 +145,17 @@
 
   <div class="page-scroll-tools" id="pageScrollTools" hidden aria-label="تمرير الصفحة">
     <button type="button" id="btnScrollTop" class="page-scroll-btn" aria-label="أول الصفحة" title="أول الصفحة">
-      <span class="page-scroll-arrow" aria-hidden="true">↑</span>
+      <svg class="page-scroll-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path fill="currentColor" d="M12 5.4 6.6 12.9h10.8L12 5.4z" />
+      </svg>
     </button>
     <button type="button" id="btnScrollBottom" class="page-scroll-btn" aria-label="آخر الصفحة" title="آخر الصفحة">
-      <span class="page-scroll-arrow" aria-hidden="true">↓</span>
+      <svg class="page-scroll-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path fill="currentColor" d="M12 18.6 17.4 11.1H6.6L12 18.6z" />
+      </svg>
     </button>
   </div>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
