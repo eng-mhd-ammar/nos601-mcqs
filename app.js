@@ -43,6 +43,7 @@
     appToast: document.getElementById("appToast"),
     pageJumpForm: document.getElementById("pageJumpForm"),
     pageJumpInput: document.getElementById("pageJumpInput"),
+    btnPageJump: document.getElementById("btnPageJump"),
   };
 
   let allQuestions = [];
@@ -233,6 +234,7 @@
       els.sectionFilter,
       els.pageSize,
       els.pageJumpInput,
+      els.btnPageJump,
     ].forEach((el) => {
       if (el) el.disabled = disabled;
     });

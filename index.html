@@ -85,29 +85,32 @@
     <p id="loadMsg" class="load-msg">جاري تحميل الأسئلة...</p>
     <div id="quizList" class="quiz-list" aria-live="polite"></div>
 
-    <nav class="pager panel" id="pager" hidden>
-      <button type="button" id="prevPage" class="btn ghost">السابق</button>
-      <span id="pageInfo">صفحة 1</span>
-      <button type="button" id="nextPage" class="btn ghost">التالي</button>
+    <nav class="pager panel" id="pager" hidden aria-label="تنقّل الصفحات">
+      <form id="pageJumpForm" class="pager-jump">
+        <span class="pager-jump-label">انتقال إلى صفحة</span>
+        <div class="pager-jump-control">
+          <input
+            type="number"
+            id="pageJumpInput"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="1"
+            aria-label="رقم الصفحة"
+          />
+          <button type="submit" id="btnPageJump" class="btn primary pager-jump-btn">انتقال</button>
+        </div>
+      </form>
+      <div class="pager-nav">
+        <button type="button" id="prevPage" class="btn ghost">السابق</button>
+        <span id="pageInfo" class="pager-status">صفحة 1</span>
+        <button type="button" id="nextPage" class="btn ghost">التالي</button>
+      </div>
     </nav>
   </main>
 
   <footer class="foot">
     <p>اضغط <strong>تأكيد الإجابة</strong> لكل سؤال — الصحيح <span class="correct-sample">أخضر</span>، وعند الخطأ إجابتك <span class="wrong-sample">حمراء</span> والصحيحة <span class="correct-sample">خضراء</span>. ثم <strong>احسب العلامة</strong>.</p>
-    <form id="pageJumpForm" class="foot-page-jump">
-      <label class="foot-page-label" for="pageJumpInput">انتقال إلى صفحة</label>
-      <input
-        type="number"
-        id="pageJumpInput"
-        class="foot-page-input"
-        min="1"
-        step="1"
-        inputmode="numeric"
-        placeholder="رقم الصفحة"
-        aria-label="رقم الصفحة"
-      />
-      <button type="submit" class="btn ghost">انتقال</button>
-    </form>
     <p class="foot-credit">By Mhd Ammar Al-Nwelati</p>
   </footer>
 
@@ -140,6 +143,6 @@
 
   <div id="appToast" class="app-toast" hidden role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
