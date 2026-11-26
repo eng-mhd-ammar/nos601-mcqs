@@ -189,6 +189,11 @@
     } else {
       scrollToPageTop();
     }
+    return true;
+  }
+
+  function clearPageJumpInput() {
+    if (els.pageJumpInput) els.pageJumpInput.value = "";
   }
 
   function restorePageForLastManualQuestion() {
@@ -783,9 +788,8 @@
           showToast("أدخل رقم الصفحة.", "warn");
           return;
         }
-        const ok = goToPage(Number(raw));
-        if (ok && els.pageJumpInput) {
-          els.pageJumpInput.value = "";
+        if (goToPage(Number(raw))) {
+          clearPageJumpInput();
         }
       });
     }
