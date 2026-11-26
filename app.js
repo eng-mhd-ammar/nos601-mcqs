@@ -1,9 +1,11 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "nos601-answers-v1";
-  const CONFIRMED_KEY = "nos601-confirmed-v1";
-  const PRE_SOLVED_KEY = "nos601-presolved-v1";
+  const STORAGE_KEY = "nos601-answers-v2";
+  const CONFIRMED_KEY = "nos601-confirmed-v2";
+  const PRE_SOLVED_KEY = "nos601-presolved-v2";
+  const QUESTIONS_JSON_VERSION = "20261126-pdf";
+  const MERGED_OPTION_RE = /^(.+)\s+([E-Z])\)\s+(.+)$/;
   const PRE_SOLVE_MIN = 100;
   const PRE_SOLVE_MAX = 500;
 
@@ -180,6 +182,48 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  function splitMergedOptions(options) {
+    const out = [];
+    let splitAnswer = null;
+    for (const opt of options) {
+      const letter = String(opt.letter || "").trim();
+      const text = String(opt.text || "").trim();
+      const match = text.match(MERGED_OPTION_RE);
+      if (match && letter && match[2] > letter) {
+        out.push({ letter, text: match[1].trim() });
+        out.push({ letter: match[2], text: match[3].trim() });
+        splitAnswer = match[2];
+      } else {
+        out.push({ letter, text });
+      }
+    }
+    return { options: out, splitAnswer };
+  }
+
+  function normalizeQuestion(raw) {
+    if (!raw || !Array.isArray(raw.options)) return raw;
+    const { options, splitAnswer } = splitMergedOptions(raw.options);
+    const letters = new Set(options.map((o) => o.letter));
+    let answer = String(raw.answer || "").trim();
+    if (splitAnswer && letters.has(splitAnswer)) {
+      answer = splitAnswer;
+    }
+    if (!letters.has(answer) && splitAnswer) {
+      answer = splitAnswer;
+    }
+    return {
+      ...raw,
+      text: String(raw.text || "").trim(),
+      options,
+      answer,
+    };
+  }
+
+  function normalizeQuestions(data) {
+    if (!Array.isArray(data)) return [];
+    return data.map(normalizeQuestion);
   }
 
   function shortSection(name) {
@@ -499,13 +543,13 @@
     appReady = false;
     setLoading(true, "جاري تحميل الأسئلة…");
 
-    fetch("questions.json")
+    fetch(`questions.json?v=${QUESTIONS_JSON_VERSION}`, { cache: "no-store" })
       .then((r) => {
         if (!r.ok) throw new Error("تعذر تحميل questions.json");
         return r.json();
       })
       .then((data) => {
-        allQuestions = data;
+        allQuestions = normalizeQuestions(data);
         bootstrapPreSolvedFromStorage();
         fillSections();
         filtered = allQuestions.slice();
